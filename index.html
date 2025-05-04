@@ -5,21 +5,46 @@
   <title>Gerenciador - Clientes, Produtos e Orçamentos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-    h2 { margin-top: 30px; }
-    label, input, select { display: block; margin-bottom: 10px; }
-    input, select { padding: 6px; width: 100%; max-width: 400px; }
-    button { padding: 8px 16px; margin-top: 10px; cursor: pointer; }
-    .section { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    ul { list-style-type: none; padding-left: 0; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f0f0f0; }
+    header { background-color: #007bff; color: white; padding: 20px; text-align: center; }
+    .tabs { display: flex; justify-content: center; background-color: #e0e0e0; }
+    .tab-button {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      background-color: #ddd;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .tab-button.active { background-color: #fff; border-bottom: 2px solid #007bff; }
+    .tab-content {
+      display: none;
+      padding: 20px;
+      background-color: white;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .tab-content.active { display: block; }
+    label, input, select { display: block; margin-bottom: 10px; width: 100%; max-width: 400px; }
+    input, select { padding: 6px; }
+    button { padding: 8px 16px; margin-top: 10px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+    ul { list-style-type: none; padding: 0; }
     li { background: #eee; margin-bottom: 5px; padding: 6px; border-radius: 4px; }
   </style>
 </head>
 <body>
 
-  <h1>Gerenciador de Dados com Google Sheets</h1>
+  <header>
+    <h1>Gerenciador de Dados</h1>
+  </header>
 
-  <div class="section">
+  <div class="tabs">
+    <button class="tab-button active" onclick="abrirAba('clientes')">Clientes</button>
+    <button class="tab-button" onclick="abrirAba('produtos')">Produtos</button>
+    <button class="tab-button" onclick="abrirAba('orcamentos')">Orçamentos</button>
+  </div>
+
+  <div id="clientes" class="tab-content active">
     <h2>Clientes</h2>
     <label>Nome: <input id="cliente-nome" /></label>
     <label>Telefone: <input id="cliente-telefone" /></label>
@@ -28,7 +53,7 @@
     <ul id="lista-clientes"></ul>
   </div>
 
-  <div class="section">
+  <div id="produtos" class="tab-content">
     <h2>Produtos</h2>
     <label>Nome: <input id="produto-nome" /></label>
     <label>Preço: <input id="produto-preco" type="number" /></label>
@@ -36,7 +61,7 @@
     <ul id="lista-produtos"></ul>
   </div>
 
-  <div class="section">
+  <div id="orcamentos" class="tab-content">
     <h2>Orçamentos</h2>
     <label>Cliente:
       <select id="orcamento-cliente"></select>
@@ -49,6 +74,13 @@
 
   <script>
     const URL_API = 'https://script.google.com/macros/s/AKfycbwwvJ-GKmuwVvTJGPBmdHRdBC8pCxNZUcvvvOu69xnD2eOUxDGY3CuBC2indnR1DZR5aQ/exec';
+
+    function abrirAba(id) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      event.target.classList.add('active');
+    }
 
     // Clientes
     function salvarCliente() {
@@ -106,4 +138,48 @@
         .then(produtos => {
           const ul = document.getElementById("lista-produtos");
           ul.innerHTML = "";
-          produtos
+          produtos.forEach(p => {
+            ul.innerHTML += `<li>${p.nome} - R$ ${p.preco}</li>`;
+          });
+        });
+    }
+
+    // Orçamentos
+    function salvarOrcamento() {
+      const cliente = document.getElementById("orcamento-cliente").value;
+      const produtos = document.getElementById("orcamento-produtos").value;
+      const total = document.getElementById("orcamento-total").value;
+
+      fetch(URL_API, {
+        method: "POST",
+        body: JSON.stringify({
+          tipo: "orcamentos",
+          payload: [cliente, produtos, total]
+        })
+      }).then(() => {
+        alert("Orçamento salvo!");
+        carregarOrcamentos();
+      });
+    }
+
+    function carregarOrcamentos() {
+      fetch(URL_API + '?tipo=orcamentos')
+        .then(res => res.json())
+        .then(orcamentos => {
+          const ul = document.getElementById("lista-orcamentos");
+          ul.innerHTML = "";
+          orcamentos.forEach(o => {
+            ul.innerHTML += `<li>${o.cliente} - Produtos: ${o.produtos} - Total: R$ ${o.total}</li>`;
+          });
+        });
+    }
+
+    // Carregamento inicial
+    window.onload = function () {
+      carregarClientes();
+      carregarProdutos();
+      carregarOrcamentos();
+    }
+  </script>
+</body>
+</html>
