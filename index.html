@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Orçamento Elétrico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#4F4D8C',
+                    }
+                }
+            }
+        }
+
+        // Detectar modo escuro
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+</head>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    <div class="container mx-auto p-4">
+        <header class="mb-6">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-4">
+                <div class="w-24 h-24 md:w-28 md:h-28">
+                    <img src="https://pfst.cf2.poecdn.net/base/image/839525f210d11495af326adbf6d34bc90a61720d2a9a5d5154d70938b99e34a7?w=1440&h=1440" 
+                         alt="ProTech - Soluções Elétricas e Segurança Eletrônica" 
+                         class="w-full h-full object-contain">
+                </div>
+                <div class="text-center md:text-left">
+                    <h1 class="text-2xl md:text-3xl font-bold text-primary">Sistema de Orçamento Elétrico</h1>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">ProTech - Soluções Elétricas e Segurança Eletrônica</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navegação em abas -->
+        <nav class="mb-6">
+            <ul class="flex flex-wrap border-b border-gray-300 dark:border-gray-700">
+                <li class="mr-1">
+                    <button id="nav-clientes" class="tab-button py-2 px-4 font-semibold bg-primary text-white rounded-t-lg">Clientes</button>
+                </li>
+                <li class="mr-1">
+                    <button id="nav-produtos" class="tab-button py-2 px-4 font-semibold bg-gray-200 dark:bg-gray-800 hover:bg-primary hover:text-white rounded-t-lg">Produtos</button>
+                </li>
+                <li class="mr-1">
+                    <button id="nav-orcamentos" class="tab-button py-2 px-4 font-semibold bg-gray-200 dark:bg-gray-800 hover:bg-primary hover:text-white rounded-t-lg">Orçamentos</button>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Seções de conteúdo -->
+        <div id="conteudo">
+            <!-- Seção de Clientes -->
+            <section id="secao-clientes" class="tab-content">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Formulário de Clientes -->
+                    <div class="w-full md:w-1/3 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                        <h2 class="text-xl font-bold mb-4">Cadastro de Clientes</h2>
+                        <form id="form-cliente" class="space-y-4">
+                            <input type="hidden" id="cliente-id">
+                            <div>
+                                <label for="cliente-nome" class="block mb-1">Nome:</label>
+                                <input type="text" id="cliente-nome" class="w-full p-2 border rounded-md text-base text-gray-900" required>
+                            </div>
+                            <div>
+                                <label for="cliente-telefone" class="block mb-1">Telefone:</label>
+                                <input type="tel" id="cliente-telefone" class="w-full p-2 border rounded-md text-base text-gray-900">
+                            </div>
+                            <div>
+                                <label for="cliente-email" class="block mb-1">Email:</label>
+                                <input type="email" id="cliente-email" class="w-full p-2 border rounded-md text-base text-gray-900">
+                            </div>
+                            <div>
+                                <label for="cliente-endereco" class="block mb-1">Endereço:</label>
+                                <textarea id="cliente-endereco" class="w-full p-2 border rounded-md text-base text-gray-900" rows="2"></textarea>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="bg-primary text-white py-2 px-4 rounded-md hover:bg-secondary">Salvar</button>
+                                <button type="button" id="btn-limpar-cliente" class="bg-gray-300 dark:bg-gray-700 py-2 px-4 rounded-md">Limpar</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Lista de Clientes -->
+                    <div class="w-full md:w-2/3 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                        <h2 class="text-xl font-bold mb-4">Lista de Clientes</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-200 dark:bg-gray-700">
+                                        <th class="p-2 text-left">Nome</th>
+                                        <th class="p-2 text-left">Telefone</th>
+                                        <th class="p-2 text-left">Email</th>
+                                        <th class="p-2 text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lista-clientes">
+                                    <!-- Dados serão inseridos via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção de Produtos -->
+            <section id="secao-produtos" class="tab-content hidden">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Formulário de Produtos -->
+                    <div class="w-full md:w-1/3 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                        <h2 class="text-xl font-bold mb-4">Cadastro de Produtos</h2>
+                        <form id="form-produto" class="space-y-4">
+                            <input type="hidden" id="produto-id">
+                            <div>
+                                <label for="produto-nome" class="block mb-1">Nome:</label>
+                                <input type="text" id="produto-nome" class="w-full p-2 border rounded-md text-base text-gray-900" required>
+                            </div>
+                            <div>
+                                <label for="produto-descricao" class="block mb-1">Descrição:</label>
+                                <textarea id="produto-descricao" class="w-full p-2 border rounded-md text-base text-gray-900" rows="2"></textarea>
+                            </div>
+                            <div>
+                                <label for="produto-unidade" class="block mb-1">Unidade:</label>
+                                <select id="produto-unidade" class="w-full p-2 border rounded-md text-base text-gray-900">
+                                    <option value="un">Unidade (un)</option>
+                                    <option value="m">Metro (m)</option>
+                                    <option value="m²">Metro quadrado (m²)</option>
+                                    <option value="pç">Peça (pç)</option>
+                                    <option value="cx">Caixa (cx)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="produto-preco" class="block mb-1">Preço (R$):</label>
+                                <input type="number" id="produto-preco" class="w-full p-2 border rounded-md text-base text-gray-900" min="0" step="0.01" required>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="submit" class="bg-primary text-white py-2 px-4 rounded-md hover:bg-secondary">Salvar</button>
+                                <button type="button" id="btn-limpar-produto" class="bg-gray-300 dark:bg-gray-700 py-2 px-4 rounded-md">Limpar</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Lista de Produtos -->
+                    <div class="w-full md:w-2/3 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                        <h2 class="text-xl font-bold mb-4">Lista de Produtos</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-200 dark:bg-gray-700">
+                                        <th class="p-2 text-left">Nome</th>
+                                        <th class="p-2 text-left">Unidade</th>
+                                        <th class="p-2 text-right">Preço (R$)</th>
+                                        <th class="p-2 text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lista-produtos">
+                                    <!-- Dados serão inseridos via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Seção de Orçamentos -->
+            <section id="secao-orcamentos" class="tab-content hidden">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Formulário de Orçamentos -->
+                    <div class="w-full md:w-1/3 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                        <h2 class="text-xl font-bold mb-4">Novo Orçamento</h2>
+                        <form id="form-orcamento" class="space-y-4">
+                            <input type="hidden" id="orcamento-id">
+                            <div>
+                                <label for="orcamento-cliente" class="block mb-1">Cliente:</label>
+                                <select id="orcamento-cliente" class="w-full p-2 border rounded-md text-base text-gray-900" required>
+                                    <option value="">Selecione um cliente</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="orcamento-data" class="block mb-1">Data:</label>
+                                <input type="date" id="orcamento-data" class="w-full p-2 border rounded-md text-base text-gray-900" required>
+                            </div>
+                            <div>
+                                <label for="orcamento-descricao" class="block mb-1">Descrição:</label>
+                                <textarea id="orcamento-descricao" class="w-full p-2 border rounded-md text-base text-gray-900" rows="2"></textarea>
+                            </div>
+                            
+                            <div class="mt-4 border-t pt-4">
+                                <h3 class="font-bold mb-2">Adicionar Itens</h3>
+                                <div class="space-y-3">
+                                    <div>
+                                        <label for="item-produto" class="block mb-1">Produto:</label>
+                                        <select id="item-produto" class="w-full p-2 border rounded-md text-base text-gray-900">
+                                            <option value="">Selecione um produto</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="item-quantidade" class="block mb-1">Quantidade:</label>
+                                        <input type="number" id="item-quantidade" class="w-full p-2 border rounded-md text-base text-gray-900" min="1" value="1">
+                                    </div>
+                                    <button type="button" id="btn-adicionar-item" class="bg-secondary text-white py-2 px-4 rounded-md w-full">Adicionar Item</button>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 border-t pt-4">
+                                <h3 class="font-bold mb-2">Itens do Orçamento</h3>
+                                <div id="itens-orcamento" class="space-y-2 max-h-60 overflow-y-auto">
+                                    <!-- Itens serão adicionados aqui via JavaScript -->
+                                </div>
+                                <div class="mt-3 font-bold text-right">
+                                    Total: R$ <span id="orcamento-total">0,00</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button type="submit" class="bg-primary text-white py-2 px-4 rounded-md hover:bg-secondary">Salvar</button>
+                                <button type="button" id="btn-limpar-orcamento" class="bg-gray-300 dark:bg-gray-700 py-2 px-4 rounded-md">Limpar</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Lista de Orçamentos -->
+                    <div class="w-full md:w-2/3 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                        <h2 class="text-xl font-bold mb-4">Lista de Orçamentos</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-200 dark:bg-gray-700">
+                                        <th class="p-2 text-left">Cliente</th>
+                                        <th class="p-2 text-center">Data</th>
+                                        <th class="p-2 text-right">Total (R$)</th>
+                                        <th class="p-2 text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lista-orcamentos">
+                                    <!-- Dados serão inseridos via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Container de botões de Importação/Exportação -->
+            <section class="mt-8 mb-6 bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <h2 class="text-lg font-semibold">Backup e Restauração</h2>
+                    <button id="btn-exportar" class="py-2 px-4 font-semibold bg-green-600 text-white rounded-lg w-full sm:w-auto">Exportar Dados (JSON)</button>
+                    <button id="btn-importar" class="py-2 px-4 font-semibold bg-blue-600 text-white rounded-lg w-full sm:w-auto">Importar Dados</button>
+                    <button id="btn-gerar-txt" class="py-2 px-4 font-semibold bg-purple-600 text-white rounded-lg w-full sm:w-auto">Gerar Base de Dados TXT</button>
+                </div>
+            </section>
+            
+            <!-- Modal de Visualização de Orçamento -->
+            <div id="modal-visualizar" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">Detalhes do Orçamento</h2>
+                        <button id="btn-fechar-modal" class="text-xl font-bold">&times;</button>
+                    </div>
+                    <div id="conteudo-orcamento" class="print:text-black">
+                        <!-- Conteúdo do orçamento será inserido aqui -->
+                    </div>
+                    <div class="mt-6 flex justify-end gap-2 print:hidden">
+                        <button id="btn-imprimir" class="bg-blue-600 text-white py-2 px-4 rounded-md">Imprimir</button>
+                        <button id="btn-fechar" class="bg-gray-500 text-white py-2 px-4 rounded-md">Fechar</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal de Importação/Exportação -->
+            <div id="modal-dados" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-2xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 id="modal-dados-titulo" class="text-xl font-bold">Exportar/Importar Dados</h2>
+                        <button id="btn-fechar-modal-dados" class="text-xl font-bold">&times;</button>
+                    </div>
+                    <p class="mb-4">Copie o texto abaixo para salvar seus dados ou cole dados previamente exportados:</p>
+                    <textarea id="dados-json" class="w-full h-64 p-2 border rounded-md text-base text-gray-900" spellcheck="false"></textarea>
+                    <div class="mt-4 flex justify-end gap-2">
+                        <button id="btn-copiar" class="bg-green-600 text-white py-2 px-4 rounded-md">Copiar</button>
+                        <button id="btn-aplicar" class="bg-blue-600 text-white py-2 px-4 rounded-md">Aplicar</button>
+                        <button id="btn-cancelar-modal" class="bg-gray-500 text-white py-2 px-4 rounded-md">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal de Base de Dados TXT -->
+            <div id="modal-txt" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-4xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">Base de Dados em Formato Texto</h2>
+                        <button id="btn-fechar-modal-txt" class="text-xl font-bold">&times;</button>
+                    </div>
+                    <div class="mb-4">
+                        <p class="text-sm">Para salvar estes dados como arquivo texto:</p>
+                        <ol class="text-sm list-decimal list-inside ml-4 mt-1">
+                            <li>Clique no botão "Copiar Texto" abaixo</li>
+                            <li>Abra um editor de texto no seu computador (Bloco de Notas, etc.)</li>
+                            <li>Cole o conteúdo (Ctrl+V) no editor</li>
+                            <li>Salve o arquivo com a extensão .txt</li>
+                        </ol>
+                    </div>
+                    <div class="border p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                        <pre id="dados-txt" class="whitespace-pre-wrap text-sm font-mono max-h-96 overflow-y-auto"></pre>
+                    </div>
+                    <div class="mt-4 flex justify-end gap-2">
+                        <button id="btn-copiar-txt" class="bg-purple-600 text-white py-2 px-4 rounded-md">Copiar Texto</button>
+                        <button id="btn-fechar-txt" class="bg-gray-500 text-white py-2 px-4 rounded-md">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast de Notificação -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg transform transition-transform duration-300 translate-y-20 opacity-0 shadow-lg">
+        Mensagem de notificação
+    </div>
+
+    <script>
+        // Modelo de dados
+        let dados = {
+            clientes: [],
+            produtos: [],
+            orcamentos: [],
+            contadores: {
+                cliente: 1,
+                produto: 1,
+                orcamento: 1
+            }
+        };
+
+        // Carrega dados de exemplo para demonstração
+        function carregarDadosExemplo() {
+            // Alguns clientes de exemplo
+            dados.clientes = [
+                { id: 1, nome: "João Silva", telefone: "(11) 98765-4321", email: "joao@email.com", endereco: "Rua das Flores, 123" },
+                { id: 2, nome: "Maria Souza", telefone: "(11) 91234-5678", email: "maria@email.com", endereco: "Av. Principal, 456" }
+            ];
+            dados.contadores.cliente = 3;
+            
+            // Alguns produtos de exemplo
+            dados.produtos = [
+                { id: 1, nome: "Disjuntor 25A", descricao: "Disjuntor monofásico 25A", unidade: "un", preco: 25.50 },
+                { id: 2, nome: "Cabo 2,5mm²", descricao: "Cabo flexível 2,5mm²", unidade: "m", preco: 2.80 },
+                { id: 3, nome: "Tomada Simples", descricao: "Tomada 10A padrão brasileiro", unidade: "un", preco: 12.90 }
+            ];
+            dados.contadores.produto = 4;
+            
+            // Um orçamento de exemplo
+            dados.orcamentos = [
+                {
+                    id: 1,
+                    clienteId: 1,
+                    data: new Date().toISOString().split('T')[0],
+                    descricao: "Instalação elétrica residencial",
+                    itens: [
+                        { produtoId: 1, quantidade: 2, precoUnitario: 25.50 },
+                        { produtoId: 2, quantidade: 50, precoUnitario: 2.80 }
+                    ]
+                }
+            ];
+            dados.contadores.orcamento = 2;
+            
+            // Atualiza a interface
+            atualizarListaClientes();
+            atualizarListaProdutos();
+            atualizarListaOrcamentos();
+            atualizarSelectClientes();
+            atualizarSelectProdutos();
+        }
+
+        // Funções de manipulação de dados
+        function encontrarCliente(id) {
+            return dados.clientes.find(c => c.id === id);
+        }
+        
+        function encontrarProduto(id) {
+            return dados.produtos.find(p => p.id === id);
+        }
+        
+        function encontrarOrcamento(id) {
+            return dados.orcamentos.find(o => o.id === id);
+        }
+        
+        function calcularTotalOrcamento(orcamento) {
+            return orcamento.itens.reduce((total, item) => {
+                return total + (item.quantidade * item.precoUnitario);
+            }, 0);
+        }
+        
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        
+        function formatarData(dataStr) {
+            const data = new Date(dataStr);
+            return data.toLocaleDateString('pt-BR');
+        }
+
+        // Funções de atualização da interface
+        function atualizarListaClientes() {
+            const listaClientes = document.getElementById('lista-clientes');
+            listaClientes.innerHTML = '';
+            
+            dados.clientes.forEach(cliente => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-300 dark:border-gray-700';
+                tr.innerHTML = `
+                    <td class="p-2">${cliente.nome}</td>
+                    <td class="p-2">${cliente.telefone || '-'}</td>
+                    <td class="p-2">${cliente.email || '-'}</td>
+                    <td class="p-2 text-center">
+                        <button class="editar-cliente text-blue-600 mr-2" data-id="${cliente.id}">Editar</button>
+                        <button class="excluir-cliente text-red-600" data-id="${cliente.id}">Excluir</button>
+                    </td>
+                `;
+                listaClientes.appendChild(tr);
+            });
+            
+            // Adicionar eventos aos botões
+            document.querySelectorAll('.editar-cliente').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const cliente = encontrarCliente(parseInt(this.dataset.id));
+                    if (cliente) {
+                        document.getElementById('cliente-id').value = cliente.id;
+                        document.getElementById('cliente-nome').value = cliente.nome;
+                        document.getElementById('cliente-telefone').value = cliente.telefone || '';
+                        document.getElementById('cliente-email').value = cliente.email || '';
+                        document.getElementById('cliente-endereco').value = cliente.endereco || '';
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.excluir-cliente').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    // Verifica se o cliente está em algum orçamento antes de excluir
+                    const clienteEmOrcamento = dados.orcamentos.some(o => o.clienteId === id);
+                    if (clienteEmOrcamento) {
+                        mostrarToast('Este cliente não pode ser excluído porque está associado a orçamentos.');
+                        return;
+                    }
+                    
+                    dados.clientes = dados.clientes.filter(c => c.id !== id);
+                    atualizarListaClientes();
+                    atualizarSelectClientes();
+                    mostrarToast('Cliente excluído com sucesso!');
+                });
+            });
+        }
+        
+        function atualizarListaProdutos() {
+            const listaProdutos = document.getElementById('lista-produtos');
+            listaProdutos.innerHTML = '';
+            
+            dados.produtos.forEach(produto => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-300 dark:border-gray-700';
+                tr.innerHTML = `
+                    <td class="p-2">${produto.nome}</td>
+                    <td class="p-2">${produto.unidade}</td>
+                    <td class="p-2 text-right">${formatarMoeda(produto.preco)}</td>
+                    <td class="p-2 text-center">
+                        <button class="editar-produto text-blue-600 mr-2" data-id="${produto.id}">Editar</button>
+                        <button class="excluir-produto text-red-600" data-id="${produto.id}">Excluir</button>
+                    </td>
+                `;
+                listaProdutos.appendChild(tr);
+            });
+            
+            // Adicionar eventos aos botões
+            document.querySelectorAll('.editar-produto').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const produto = encontrarProduto(parseInt(this.dataset.id));
+                    if (produto) {
+                        document.getElementById('produto-id').value = produto.id;
+                        document.getElementById('produto-nome').value = produto.nome;
+                        document.getElementById('produto-descricao').value = produto.descricao || '';
+                        document.getElementById('produto-unidade').value = produto.unidade;
+                        document.getElementById('produto-preco').value = produto.preco;
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.excluir-produto').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    // Verifica se o produto está em algum orçamento antes de excluir
+                    const produtoEmOrcamento = dados.orcamentos.some(o => 
+                        o.itens.some(i => i.produtoId === id)
+                    );
+                    
+                    if (produtoEmOrcamento) {
+                        mostrarToast('Este produto não pode ser excluído porque está associado a orçamentos.');
+                        return;
+                    }
+                    
+                    dados.produtos = dados.produtos.filter(p => p.id !== id);
+                    atualizarListaProdutos();
+                    atualizarSelectProdutos();
+                    mostrarToast('Produto excluído com sucesso!');
+                });
+            });
+        }
+        
+        function atualizarListaOrcamentos() {
+            const listaOrcamentos = document.getElementById('lista-orcamentos');
+            listaOrcamentos.innerHTML = '';
+            
+            dados.orcamentos.forEach(orcamento => {
+                const cliente = encontrarCliente(orcamento.clienteId);
+                const total = calcularTotalOrcamento(orcamento);
+                
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-300 dark:border-gray-700';
+                tr.innerHTML = `
+                    <td class="p-2">${cliente ? cliente.nome : 'Cliente não encontrado'}</td>
+                    <td class="p-2 text-center">${formatarData(orcamento.data)}</td>
+                    <td class="p-2 text-right">${formatarMoeda(total)}</td>
+                    <td class="p-2 text-center">
+                        <button class="visualizar-orcamento text-green-600 mr-2" data-id="${orcamento.id}">Visualizar</button>
+                        <button class="editar-orcamento text-blue-600 mr-2" data-id="${orcamento.id}">Editar</button>
+                        <button class="excluir-orcamento text-red-600" data-id="${orcamento.id}">Excluir</button>
+                    </td>
+                `;
+                listaOrcamentos.appendChild(tr);
+            });
+            
+            // Adicionar eventos aos botões
+            document.querySelectorAll('.visualizar-orcamento').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    visualizarOrcamento(parseInt(this.dataset.id));
+                });
+            });
+            
+            document.querySelectorAll('.editar-orcamento').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const orcamento = encontrarOrcamento(parseInt(this.dataset.id));
+                    if (orcamento) {
+                        carregarOrcamentoParaEdicao(orcamento);
+                        // Muda para a aba de orçamentos
+                        ativarTab('nav-orcamentos');
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.excluir-orcamento').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = parseInt(this.dataset.id);
+                    dados.orcamentos = dados.orcamentos.filter(o => o.id !== id);
+                    atualizarListaOrcamentos();
+                    mostrarToast('Orçamento excluído com sucesso!');
+                });
+            });
+        }
+        
+        function atualizarSelectClientes() {
+            const select = document.getElementById('orcamento-cliente');
+            // Preserva a opção padrão
+            select.innerHTML = '<option value="">Selecione um cliente</option>';
+            
+            dados.clientes.forEach(cliente => {
+                const option = document.createElement('option');
+                option.value = cliente.id;
+                option.textContent = cliente.nome;
+                select.appendChild(option);
+            });
+        }
+        
+        function atualizarSelectProdutos() {
+            const select = document.getElementById('item-produto');
+            // Preserva a opção padrão
+            select.innerHTML = '<option value="">Selecione um produto</option>';
+            
+            dados.produtos.forEach(produto => {
+                const option = document.createElement('option');
+                option.value = produto.id;
+                option.textContent = `${produto.nome} - R$ ${formatarMoeda(produto.preco)}/${produto.unidade}`;
+                select.appendChild(option);
+            });
+        }
+        
+        function atualizarItensOrcamento() {
+            const container = document.getElementById('itens-orcamento');
+            const orcamentoId = document.getElementById('orcamento-id').value;
+            container.innerHTML = '';
+            
+            if (!orcamentoId) return;
+            
+            const orcamento = encontrarOrcamento(parseInt(orcamentoId));
+            if (!orcamento) return;
+            
+            orcamento.itens.forEach((item, index) => {
+                const produto = encontrarProduto(item.produtoId);
+                if (!produto) return;
+                
+                const subtotal = item.quantidade * item.precoUnitario;
+                
+                const div = document.createElement('div');
+                div.className = 'bg-white dark:bg-gray-700 p-2 rounded-md flex justify-between items-center';
+                div.innerHTML = `
+                    <div>
+                        <div class="font-semibold">${produto.nome}</div>
+                        <div class="text-sm">${item.quantidade} ${produto.unidade} x R$ ${formatarMoeda(item.precoUnitario)}</div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="mr-3">R$ ${formatarMoeda(subtotal)}</div>
+                        <button class="remover-item text-red-600" data-index="${index}">&times;</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            // Atualiza o total
+            const total = calcularTotalOrcamento(orcamento);
+            document.getElementById('orcamento-total').textContent = formatarMoeda(total);
+            
+            // Adiciona eventos para remover itens
+            document.querySelectorAll('.remover-item').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = parseInt(this.dataset.index);
+                    orcamento.itens.splice(index, 1);
+                    atualizarItensOrcamento();
+                });
+            });
+        }
+        
+        function carregarOrcamentoParaEdicao(orcamento) {
+            document.getElementById('orcamento-id').value = orcamento.id;
+            document.getElementById('orcamento-cliente').value = orcamento.clienteId;
+            document.getElementById('orcamento-data').value = orcamento.data;
+            document.getElementById('orcamento-descricao').value = orcamento.descricao || '';
+            
+            // Limpa os campos de adição de item
+            document.getElementById('item-produto').value = '';
+            document.getElementById('item-quantidade').value = 1;
+            
+            // Atualiza a lista de itens
+            atualizarItensOrcamento();
+        }
+        
+        function visualizarOrcamento(id) {
+            const orcamento = encontrarOrcamento(id);
+            if (!orcamento) return;
+            
+            const cliente = encontrarCliente(orcamento.clienteId);
+            const total = calcularTotalOrcamento(orcamento);
+            
+            const conteudo = document.getElementById('conteudo-orcamento');
+            
+            let html = `
+                <div class="mb-6 pb-3 border-b">
+                    <h1 class="text-2xl font-bold mb-4">Orçamento #${orcamento.id}</h1>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="font-bold">Cliente</h3>
+                            <p>${cliente ? cliente.nome : 'Cliente não encontrado'}</p>
+                            <p>${cliente ? cliente.telefone || '-' : '-'}</p>
+                            <p>${cliente ? cliente.email || '-' : '-'}</p>
+                            <p>${cliente ? cliente.endereco || '-' : '-'}</p>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">Informações</h3>
+                            <p>Data: ${formatarData(orcamento.data)}</p>
+                            <p>Descrição: ${orcamento.descricao || '-'}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="font-bold mb-2">Itens do Orçamento</h3>
+                <table class="w-full mb-4">
+                    <thead>
+                        <tr class="bg-gray-200 dark:bg-gray-700">
+                            <th class="p-2 text-left">Produto</th>
+                            <th class="p-2 text-center">Quantidade</th>
+                            <th class="p-2 text-right">Valor Unitário</th>
+                            <th class="p-2 text-right">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            orcamento.itens.forEach(item => {
+                const produto = encontrarProduto(item.produtoId);
+                if (!produto) return;
+                
+                const subtotal = item.quantidade * item.precoUnitario;
+                
+                html += `
+                    <tr class="border-b border-gray-300 dark:border-gray-700">
+                        <td class="p-2">
+                            <div class="font-semibold">${produto.nome}</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">${produto.descricao || ''}</div>
+                        </td>
+                        <td class="p-2 text-center">${item.quantidade} ${produto.unidade}</td>
+                        <td class="p-2 text-right">R$ ${formatarMoeda(item.precoUnitario)}</td>
+                        <td class="p-2 text-right">R$ ${formatarMoeda(subtotal)}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                    <tfoot>
+                        <tr class="font-bold">
+                            <td colspan="3" class="p-2 text-right">Total:</td>
+                            <td class="p-2 text-right">R$ ${formatarMoeda(total)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <div class="mt-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <h3 class="font-bold mb-2">Observações</h3>
+                    <p>Orçamento válido por 15 dias.</p>
+                    <p>Prazo de execução a combinar após aprovação.</p>
+                </div>
+            `;
+            
+            conteudo.innerHTML = html;
+            
+            // Exibe o modal
+            document.getElementById('modal-visualizar').classList.remove('hidden');
+        }
+
+        // Funções para lidar com exportação/importação de dados
+        function exportarDados() {
+            const dadosExportacao = JSON.stringify(dados, null, 2);
+            document.getElementById('dados-json').value = dadosExportacao;
+            document.getElementById('modal-dados-titulo').textContent = 'Exportar Dados';
+            document.getElementById('modal-dados').classList.remove('hidden');
+        }
+        
+        function importarDados() {
+            document.getElementById('dados-json').value = '';
+            document.getElementById('modal-dados-titulo').textContent = 'Importar Dados';
+            document.getElementById('modal-dados').classList.remove('hidden');
+        }
+        
+        function gerarBaseDadosTXT() {
+            // Criando uma string formatada para representar os dados
+            let texto = "=============================================================\n";
+            texto += "             SISTEMA DE ORÇAMENTO ELÉTRICO - DATABASE            \n";
+            texto += "=============================================================\n\n";
+            
+            // Adicionando informação da data de geração
+            const dataAtual = new Date();
+            texto += `Data de geração: ${dataAtual.toLocaleDateString('pt-BR')} ${dataAtual.toLocaleTimeString('pt-BR')}\n\n`;
+            
+            // CLIENTES
+            texto += "=============================================================\n";
+            texto += "                         CLIENTES                             \n";
+            texto += "=============================================================\n\n";
+            
+            if (dados.clientes.length === 0) {
+                texto += "Nenhum cliente cadastrado.\n\n";
+            } else {
+                dados.clientes.forEach(cliente => {
+                    texto += `ID: ${cliente.id}\n`;
+                    texto += `Nome: ${cliente.nome}\n`;
+                    texto += `Telefone: ${cliente.telefone || 'Não informado'}\n`;
+                    texto += `Email: ${cliente.email || 'Não informado'}\n`;
+                    texto += `Endereço: ${cliente.endereco || 'Não informado'}\n`;
+                    texto += "-------------------------------------------------------------\n\n";
+                });
+            }
+            
+            // PRODUTOS
+            texto += "=============================================================\n";
+            texto += "                         PRODUTOS                             \n";
+            texto += "=============================================================\n\n";
+            
+            if (dados.produtos.length === 0) {
+                texto += "Nenhum produto cadastrado.\n\n";
+            } else {
+                dados.produtos.forEach(produto => {
+                    texto += `ID: ${produto.id}\n`;
+                    texto += `Nome: ${produto.nome}\n`;
+                    texto += `Descrição: ${produto.descricao || 'Não informada'}\n`;
+                    texto += `Unidade: ${produto.unidade}\n`;
+                    texto += `Preço: R$ ${formatarMoeda(produto.preco)}\n`;
+                    texto += "-------------------------------------------------------------\n\n";
+                });
+            }
+            
+            // ORÇAMENTOS
+            texto += "=============================================================\n";
+            texto += "                        ORÇAMENTOS                            \n";
+            texto += "=============================================================\n\n";
+            
+            if (dados.orcamentos.length === 0) {
+                texto += "Nenhum orçamento cadastrado.\n\n";
+            } else {
+                dados.orcamentos.forEach(orcamento => {
+                    const cliente = encontrarCliente(orcamento.clienteId);
+                    const total = calcularTotalOrcamento(orcamento);
+                    
+                    texto += `ID: ${orcamento.id}\n`;
+                    texto += `Cliente: ${cliente ? cliente.nome : 'Cliente não encontrado'}\n`;
+                    texto += `Data: ${formatarData(orcamento.data)}\n`;
+                    texto += `Descrição: ${orcamento.descricao || 'Não informada'}\n\n`;
+                    
+                    texto += "ITENS DO ORÇAMENTO:\n";
+                    texto += "-------------------------------------------------------------\n";
+                    texto += "Produto                  | Qtd | Valor Unit. | Subtotal\n";
+                    texto += "-------------------------------------------------------------\n";
+                    
+                    orcamento.itens.forEach(item => {
+                        const produto = encontrarProduto(item.produtoId);
+                        if (!produto) return;
+                        
+                        const subtotal = item.quantidade * item.precoUnitario;
+                        
+                        // Formatação alinhada para tabela
+                        const nomeProduto = produto.nome.padEnd(25, ' ').substring(0, 25);
+                        const qtd = item.quantidade.toString().padStart(3, ' ');
+                        const unidade = produto.unidade.padEnd(3, ' ');
+                        const valorUnitario = formatarMoeda(item.precoUnitario).padStart(10, ' ');
+                        const valorSubtotal = formatarMoeda(subtotal).padStart(10, ' ');
+                        
+                        texto += `${nomeProduto} | ${qtd} ${unidade}| R$ ${valorUnitario} | R$ ${valorSubtotal}\n`;
+                    });
+                    
+                    texto += "-------------------------------------------------------------\n";
+                    texto += `TOTAL: R$ ${formatarMoeda(total).padStart(10, ' ')}\n`;
+                    texto += "=============================================================\n\n";
+                });
+            }
+            
+            texto += "=============================================================\n";
+            texto += "                FIM DO ARQUIVO DE DATABASE                    \n";
+            texto += "=============================================================\n";
+            
+            // Mostra o texto no modal
+            document.getElementById('dados-txt').textContent = texto;
+            document.getElementById('modal-txt').classList.remove('hidden');
+        }
+        
+        function aplicarImportacao() {
+            try {
+                const jsonText = document.getElementById('dados-json').value;
+                const dadosImportados = JSON.parse(jsonText);
+                
+                // Validação básica dos dados importados
+                if (!dadosImportados.clientes || !Array.isArray(dadosImportados.clientes) ||
+                    !dadosImportados.produtos || !Array.isArray(dadosImportados.produtos) ||
+                    !dadosImportados.orcamentos || !Array.isArray(dadosImportados.orcamentos) ||
+                    !dadosImportados.contadores) {
+                    throw new Error('Formato de dados inválido');
+                }
+                
+                dados = dadosImportados;
+                
+                // Atualiza a interface
+                atualizarListaClientes();
+                atualizarListaProdutos();
+                atualizarListaOrcamentos();
+                atualizarSelectClientes();
+                atualizarSelectProdutos();
+                
+                // Fecha o modal
+                document.getElementById('modal-dados').classList.add('hidden');
+                mostrarToast('Dados importados com sucesso!');
+            } catch (error) {
+                mostrarToast('Erro ao importar dados. Verifique o formato JSON.');
+                console.error('Erro na importação:', error);
+            }
+        }
+
+        // Funções utilitárias da interface
+        function ativarTab(tabId) {
+            // Desativa todas as abas
+            document.querySelectorAll('.tab-button').forEach(tab => {
+                tab.classList.remove('bg-primary', 'text-white');
+                tab.classList.add('bg-gray-200', 'dark:bg-gray-800', 'hover:bg-primary', 'hover:text-white');
+            });
+            
+            // Ativa a aba selecionada
+            document.getElementById(tabId).classList.remove('bg-gray-200', 'dark:bg-gray-800', 'hover:bg-primary', 'hover:text-white');
+            document.getElementById(tabId).classList.add('bg-primary', 'text-white');
+            
+            // Esconde todas as seções
+            document.querySelectorAll('.tab-content').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Mostra a seção correspondente
+            let sectionId;
+            if (tabId === 'nav-clientes') sectionId = 'secao-clientes';
+            else if (tabId === 'nav-produtos') sectionId = 'secao-produtos';
+            else if (tabId === 'nav-orcamentos') sectionId = 'secao-orcamentos';
+            
+            if (sectionId) {
+                document.getElementById(sectionId).classList.remove('hidden');
+            }
+        }
+        
+        function mostrarToast(mensagem) {
+            const toast = document.getElementById('toast');
+            toast.textContent = mensagem;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+        
+        function limparFormularioCliente() {
+            document.getElementById('cliente-id').value = '';
+            document.getElementById('cliente-nome').value = '';
+            document.getElementById('cliente-telefone').value = '';
+            document.getElementById('cliente-email').value = '';
+            document.getElementById('cliente-endereco').value = '';
+        }
+        
+        function limparFormularioProduto() {
+            document.getElementById('produto-id').value = '';
+            document.getElementById('produto-nome').value = '';
+            document.getElementById('produto-descricao').value = '';
+            document.getElementById('produto-unidade').value = 'un';
+            document.getElementById('produto-preco').value = '';
+        }
+        
+        function limparFormularioOrcamento() {
+            document.getElementById('orcamento-id').value = '';
+            document.getElementById('orcamento-cliente').value = '';
+            document.getElementById('orcamento-data').value = new Date().toISOString().split('T')[0];
+            document.getElementById('orcamento-descricao').value = '';
+            document.getElementById('item-produto').value = '';
+            document.getElementById('item-quantidade').value = 1;
+            document.getElementById('itens-orcamento').innerHTML = '';
+            document.getElementById('orcamento-total').textContent = '0,00';
+        }
+        
+        // Configuração de eventos quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            // Define a data atual no campo de data do orçamento
+            document.getElementById('orcamento-data').value = new Date().toISOString().split('T')[0];
+            
+            // Carrega dados de exemplo
+            carregarDadosExemplo();
+            
+            // Configura as navegações entre abas
+            document.getElementById('nav-clientes').addEventListener('click', function() {
+                ativarTab('nav-clientes');
+            });
+            
+            document.getElementById('nav-produtos').addEventListener('click', function() {
+                ativarTab('nav-produtos');
+            });
+            
+            document.getElementById('nav-orcamentos').addEventListener('click', function() {
+                ativarTab('nav-orcamentos');
+            });
+            
+            // Formulário de Clientes
+            document.getElementById('form-cliente').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const id = document.getElementById('cliente-id').value;
+                const cliente = {
+                    nome: document.getElementById('cliente-nome').value,
+                    telefone: document.getElementById('cliente-telefone').value,
+                    email: document.getElementById('cliente-email').value,
+                    endereco: document.getElementById('cliente-endereco').value
+                };
+                
+                if (id) {
+                    // Edição
+                    const index = dados.clientes.findIndex(c => c.id === parseInt(id));
+                    if (index !== -1) {
+                        cliente.id = parseInt(id);
+                        dados.clientes[index] = cliente;
+                        mostrarToast('Cliente atualizado com sucesso!');
+                    }
+                } else {
+                    // Novo cliente
+                    cliente.id = dados.contadores.cliente++;
+                    dados.clientes.push(cliente);
+                    mostrarToast('Cliente cadastrado com sucesso!');
+                }
+                
+                atualizarListaClientes();
+                atualizarSelectClientes();
+                limparFormularioCliente();
+            });
+            
+            document.getElementById('btn-limpar-cliente').addEventListener('click', limparFormularioCliente);
+            
+            // Formulário de Produtos
+            document.getElementById('form-produto').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const id = document.getElementById('produto-id').value;
+                const produto = {
+                    nome: document.getElementById('produto-nome').value,
+                    descricao: document.getElementById('produto-descricao').value,
+                    unidade: document.getElementById('produto-unidade').value,
+                    preco: parseFloat(document.getElementById('produto-preco').value)
+                };
+                
+                if (id) {
+                    // Edição
+                    const index = dados.produtos.findIndex(p => p.id === parseInt(id));
+                    if (index !== -1) {
+                        produto.id = parseInt(id);
+                        dados.produtos[index] = produto;
+                        mostrarToast('Produto atualizado com sucesso!');
+                    }
+                } else {
+                    // Novo produto
+                    produto.id = dados.contadores.produto++;
+                    dados.produtos.push(produto);
+                    mostrarToast('Produto cadastrado com sucesso!');
+                }
+                
+                atualizarListaProdutos();
+                atualizarSelectProdutos();
+                limparFormularioProduto();
+            });
+            
+            document.getElementById('btn-limpar-produto').addEventListener('click', limparFormularioProduto);
+            
+            // Formulário de Orçamentos
+            document.getElementById('btn-adicionar-item').addEventListener('click', function() {
+                const produtoId = parseInt(document.getElementById('item-produto').value);
+                const quantidade = parseInt(document.getElementById('item-quantidade').value);
+                
+                if (!produtoId || isNaN(quantidade) || quantidade <= 0) {
+                    mostrarToast('Selecione um produto e informe uma quantidade válida.');
+                    return;
+                }
+                
+                const produto = encontrarProduto(produtoId);
+                if (!produto) {
+                    mostrarToast('Produto não encontrado.');
+                    return;
+                }
+                
+                const orcamentoId = document.getElementById('orcamento-id').value;
+                let orcamento;
+                
+                if (orcamentoId) {
+                    orcamento = encontrarOrcamento(parseInt(orcamentoId));
+                } else {
+                    // Verifica se o cliente foi selecionado
+                    const clienteId = parseInt(document.getElementById('orcamento-cliente').value);
+                    if (!clienteId) {
+                        mostrarToast('Selecione um cliente antes de adicionar itens.');
+                        return;
+                    }
+                    
+                    // Cria um novo orçamento temporário
+                    orcamento = {
+                        id: dados.contadores.orcamento++,
+                        clienteId: clienteId,
+                        data: document.getElementById('orcamento-data').value,
+                        descricao: document.getElementById('orcamento-descricao').value,
+                        itens: []
+                    };
+                    
+                    dados.orcamentos.push(orcamento);
+                    document.getElementById('orcamento-id').value = orcamento.id;
+                }
+                
+                // Adiciona o item ao orçamento
+                orcamento.itens.push({
+                    produtoId: produtoId,
+                    quantidade: quantidade,
+                    precoUnitario: produto.preco
+                });
+                
+                // Atualiza a interface
+                atualizarItensOrcamento();
+                
+                // Limpa os campos do item
+                document.getElementById('item-produto').value = '';
+                document.getElementById('item-quantidade').value = 1;
+                
+                mostrarToast('Item adicionado ao orçamento!');
+            });
+            
+            document.getElementById('form-orcamento').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const orcamentoId = document.getElementById('orcamento-id').value;
+                if (!orcamentoId) {
+                    mostrarToast('Adicione pelo menos um item ao orçamento.');
+                    return;
+                }
+                
+                const orcamento = encontrarOrcamento(parseInt(orcamentoId));
+                if (!orcamento || orcamento.itens.length === 0) {
+                    mostrarToast('Adicione pelo menos um item ao orçamento.');
+                    return;
+                }
+                
+                // Atualiza os dados do orçamento
+                orcamento.clienteId = parseInt(document.getElementById('orcamento-cliente').value);
+                orcamento.data = document.getElementById('orcamento-data').value;
+                orcamento.descricao = document.getElementById('orcamento-descricao').value;
+                
+                atualizarListaOrcamentos();
+                limparFormularioOrcamento();
+                mostrarToast('Orçamento salvo com sucesso!');
+            });
+            
+            document.getElementById('btn-limpar-orcamento').addEventListener('click', limparFormularioOrcamento);
+            
+            // Eventos para fechar modais
+            document.getElementById('btn-fechar-modal').addEventListener('click', function() {
+                document.getElementById('modal-visualizar').classList.add('hidden');
+            });
+            
+            document.getElementById('btn-fechar').addEventListener('click', function() {
+                document.getElementById('modal-visualizar').classList.add('hidden');
+            });
+            
+            document.getElementById('btn-fechar-modal-dados').addEventListener('click', function() {
+                document.getElementById('modal-dados').classList.add('hidden');
+            });
+            
+            document.getElementById('btn-cancelar-modal').addEventListener('click', function() {
+                document.getElementById('modal-dados').classList.add('hidden');
+            });
+            
+            // Botão de imprimir
+            document.getElementById('btn-imprimir').addEventListener('click', function() {
+                window.print();
+            });
+            
+            // Botões de exportar/importar e geração de TXT
+            document.getElementById('btn-exportar').addEventListener('click', exportarDados);
+            document.getElementById('btn-importar').addEventListener('click', importarDados);
+            document.getElementById('btn-gerar-txt').addEventListener('click', gerarBaseDadosTXT);
+            
+            document.getElementById('btn-copiar').addEventListener('click', function() {
+                const dadosJson = document.getElementById('dados-json');
+                dadosJson.select();
+                document.execCommand('copy');
+                mostrarToast('Dados copiados para a área de transferência!');
+            });
+            
+            document.getElementById('btn-copiar-txt').addEventListener('click', function() {
+                const dadosTxt = document.getElementById('dados-txt');
+                // Cria um elemento de seleção temporário para o texto
+                const selecao = document.createRange();
+                selecao.selectNodeContents(dadosTxt);
+                const selecaoAtual = window.getSelection();
+                selecaoAtual.removeAllRanges();
+                selecaoAtual.addRange(selecao);
+                document.execCommand('copy');
+                selecaoAtual.removeAllRanges();
+                mostrarToast('Texto copiado para a área de transferência!');
+            });
+            
+            document.getElementById('btn-fechar-modal-txt').addEventListener('click', function() {
+                document.getElementById('modal-txt').classList.add('hidden');
+            });
+            
+            document.getElementById('btn-fechar-txt').addEventListener('click', function() {
+                document.getElementById('modal-txt').classList.add('hidden');
+            });
+            
+            document.getElementById('btn-aplicar').addEventListener('click', aplicarImportacao);
+        });
+    </script>
+</body>
+</html>
